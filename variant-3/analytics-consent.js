@@ -38,6 +38,6 @@
  window.addEventListener('storage',e=>{if(e.key!==key)return;const consent=read();if(!consent?.allowed){stop();if(started)location.reload();}else if(!allowed){allowed=true;start();close();}});
  document.addEventListener('premier:form-open',e=>{const type=e.detail?.dialog?.querySelector('form[data-request-type]')?.dataset.requestType;if(['nominee','guest'].includes(type))goal('open_'+type);});
  document.addEventListener('premier:form-success',e=>{if(['nominee','guest'].includes(e.detail?.type))goal('success_'+e.detail.type);});
- document.addEventListener('premier:ticket-change',e=>{if(['single','pair'].includes(e.detail?.plan))goal('plan_'+e.detail.plan);});
+ document.addEventListener('premier:ticket-change',e=>{if(['single','pair','vip'].includes(e.detail?.plan))goal('plan_'+e.detail.plan);});
  const consent=read();if(consent){allowed=consent.allowed;panel.hidden=true;if(allowed)start();else clearIdentifiers();}else{clearIdentifiers();panel.hidden=false;}
 })();

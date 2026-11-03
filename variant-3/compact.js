@@ -37,31 +37,36 @@
     });
   });
   const tabs=[...document.querySelectorAll('[data-plan]')],panel=document.getElementById('ticket-panel'),select=document.getElementById('ticket-plan');
-  const plans={single:{title:'Для себя',amount:'1 490',quantity:'1 билет на церемонию'},pair:{title:'Вдвоём',amount:'2 490',quantity:'2 билета на церемонию'}};
+  const standardIncludes=[...panel.querySelectorAll('.ticket-includes li')].map(item=>item.textContent);
+  const plans={single:{title:'Для себя',amount:'1 490',quantity:'1 билет на церемонию'},pair:{title:'Вдвоём',amount:'2 490',quantity:'2 билета на церемонию'},vip:{title:'VIP',amount:'9 990',quantity:'1 VIP-билет на церемонию',includes:['Отдельный стол для VIP-гостей','Свой фуршет на столе','Фотозона и профессиональные фото','Активные зоны','Закрытый званый ужин 18 декабря только для VIP-гостей и партнёров']}};
+  const planOrder=Object.keys(plans);
   let selected='single';
   function choose(plan,focus=false){
     if(!plans[plan])return;
-    const changed=selected!==plan;
+    const changed=selected!==plan,previous=selected;
     selected=plan;select.value=plan;document.querySelector('.ticket-tabs').dataset.selected=plan;
     tabs.forEach(tab=>{const active=tab.dataset.plan===plan;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;if(active&&focus)tab.focus()});
     panel.setAttribute('aria-labelledby',`ticket-tab-${plan}`);
     document.getElementById('ticket-title').textContent=plans[plan].title;
     document.getElementById('ticket-amount').textContent=plans[plan].amount;
     document.getElementById('ticket-quantity').textContent=plans[plan].quantity;
-    if(changed)document.dispatchEvent(new CustomEvent('premier:ticket-change',{detail:{plan}}));
+    const list=panel.querySelector('.ticket-includes');
+    list.replaceChildren(...(plans[plan].includes||standardIncludes).map(text=>{const li=document.createElement('li');li.textContent=text;return li}));
+    panel.dataset.plan=plan;
+    if(changed)document.dispatchEvent(new CustomEvent('premier:ticket-change',{detail:{plan,previous,direction:Math.sign(planOrder.indexOf(plan)-planOrder.indexOf(previous))}}));
   }
   tabs.forEach(tab=>{
     tab.addEventListener('click',()=>choose(tab.dataset.plan));
     tab.addEventListener('keydown',e=>{
       if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
-      e.preventDefault();choose(e.key==='Home'?'single':e.key==='End'?'pair':selected==='single'?'pair':'single',true);
+      e.preventDefault();const index=planOrder.indexOf(selected);choose(e.key==='Home'?planOrder[0]:e.key==='End'?planOrder.at(-1):planOrder[(index+(e.key==='ArrowRight'?1:-1)+planOrder.length)%planOrder.length],true);
     });
   });
   select.addEventListener('change',()=>choose(select.value));
   document.getElementById('ticket-request').addEventListener('click',e=>window.openPremierApplication('guest',e.currentTarget));
   let start=null;
   panel.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'&&!e.target.closest('button,a,input,select'))start={x:e.clientX,y:e.clientY};});
-  panel.addEventListener('pointerup',e=>{if(!start)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;start=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5)choose(dx<0?'pair':'single');});
+  panel.addEventListener('pointerup',e=>{if(!start)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;start=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5)choose(planOrder[Math.max(0,Math.min(planOrder.length-1,planOrder.indexOf(selected)+(dx<0?1:-1)))]);});
   panel.addEventListener('pointercancel',()=>start=null);
   document.querySelectorAll('a[href="#apply"],a[href="#guest"]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();window.openPremierApplication(link.hash==='#guest'?'guest':'nominee',link)}));
 })();

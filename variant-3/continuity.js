@@ -53,7 +53,7 @@
  document.querySelectorAll('.steps li').forEach(step=>{step.classList.add('is-current');step.style.setProperty('--step-progress','1')});
  // One source of tab feedback, whether changed by touch, keyboard or the form select.
  document.addEventListener('premier:ticket-change',e=>{
-  const direction=e.detail.plan==='pair'?1:-1;
+  const direction=e.detail.direction||1;
   const summary=document.querySelector('.ticket-summary');
   summary.getAnimations().forEach(a=>a.cancel());
   play(summary,[{opacity:.4,translate:`${direction*10}px 0`},{opacity:1,translate:'0 0'}],{duration:260});
