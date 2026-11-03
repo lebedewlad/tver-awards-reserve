@@ -1,0 +1,66 @@
+/* Photograph and meaning form one composition, visible together throughout. */
+.memory-story{height:auto}
+.memory-screen{position:relative;top:auto;height:auto;min-height:0;display:block;padding:48px 7%;overflow:clip;perspective:none}
+.memory-composition{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;max-width:1160px;margin:auto;transform-origin:center}
+.memory-portrait{position:relative;justify-self:end;height:min(68svh,650px);aspect-ratio:2/3;max-width:100%;margin:0;transform:none}
+.memory-portrait img{position:relative;inset:auto;width:100%;height:100%;display:block;object-fit:contain;border-radius:0;transform:none;opacity:1!important}
+.memory-portrait figcaption{position:absolute;left:14px;bottom:14px;font-size:10px;letter-spacing:.02em;color:#fff;text-shadow:0 1px 5px #000}
+.memory-copy{position:relative;inset:auto;max-width:560px;opacity:1;transform:none;align-self:center;padding:48px 0 48px 44px;background:linear-gradient(90deg,#09090900,#090909 8%);z-index:1}
+.memory-copy:before{content:'';display:block;width:72px;height:1px;background:#d8bc7c;margin-bottom:24px;transform:scaleX(calc(.2 + var(--scene-progress,1)*.8));transform-origin:left}
+.memory-copy .scene-label{font-size:9px;letter-spacing:.1em;line-height:1.7;margin-bottom:22px;color:#c5b28a}
+.memory-copy h2{font-size:clamp(42px,6vw,80px);line-height:1.02;letter-spacing:-.04em;color:#f3f1eb}
+.memory-copy h2 span{display:block;color:#dec58d}
+.memory-copy p{max-width:340px;font-size:15px;line-height:1.75;margin-top:24px;color:#c4beb1}
+.memory-copy .story-link{display:inline-flex;align-items:center;gap:12px;min-height:44px;font-size:13px;margin-top:20px}
+.memory-screen .vertical-scroll-hint{display:none}
+.memory-unified:not(.motion-paused) .memory-story{height:165svh}
+.memory-unified:not(.motion-paused) .memory-screen{position:sticky;top:64px;height:calc(100svh - 64px);padding:32px 7% 64px;display:flex;align-items:center;justify-content:center}
+.memory-unified:not(.motion-paused) .memory-composition{width:100%;transform:none}
+.memory-unified:not(.motion-paused) .memory-screen .vertical-scroll-hint{display:flex;bottom:18px;z-index:2}
+.motion-paused .memory-story{height:auto}.motion-paused .memory-screen{position:relative;top:auto;height:auto;min-height:0}.motion-paused .memory-composition{transform:none}.motion-paused .memory-copy:before{transform:none}
+@media(max-width:680px){
+.memory-screen{padding:30px 6% 48px}.memory-composition{display:flex;flex-direction:column;max-width:420px}
+.memory-portrait{height:min(46svh,380px);aspect-ratio:2/3;max-width:100%;align-self:center}
+.memory-portrait figcaption{font-size:8px;left:12px;bottom:12px}
+.memory-copy{padding:22px 0 0;align-self:stretch;text-align:left;max-width:none;background:none}
+.memory-copy:before{position:absolute;top:0;left:0;width:100%;margin:0;opacity:.6}
+.memory-copy .scene-label{font-size:8px;margin-bottom:10px}.memory-copy h2{font-size:clamp(34px,10vw,42px);line-height:1.08}.memory-copy h2 span{display:inline}
+.memory-copy p{font-size:12px;line-height:1.65;margin-top:13px;max-width:330px}.memory-copy .story-link{font-size:12px;margin-top:8px}
+.memory-unified:not(.motion-paused) .memory-screen{top:60px;height:calc(100svh - 60px);padding:20px 6% 56px}
+.memory-unified:not(.motion-paused) .memory-screen .vertical-scroll-hint{bottom:13px;font-size:9px;gap:3px}
+.memory-unified:not(.motion-paused) .memory-screen .vertical-scroll-hint svg{width:16px;height:16px}
+}
+@media(max-width:680px) and (max-height:740px){.memory-portrait{height:39svh}.memory-copy{padding-top:16px}.memory-copy .scene-label{display:none}.memory-copy h2{font-size:32px}.memory-copy p{font-size:11px;margin-top:10px}.memory-copy .story-link{font-size:11px;margin-top:3px}.memory-unified:not(.motion-paused) .memory-screen{padding-top:10px;padding-bottom:44px}}
+@media(prefers-reduced-motion:reduce){.memory-story{height:auto!important}.memory-screen{position:relative!important;top:auto!important;height:auto!important}.memory-composition{transform:none}.memory-copy:before{transform:none}}
+
+
+/* Photograph opens as a quiet full frame; the caption follows its lower edge. */
+.memory-unified:not(.motion-paused) .memory-portrait{transform:scale(.64);transform-origin:50% 50%;overflow:hidden;border-radius:8px;backface-visibility:hidden;will-change:transform}
+.memory-unified:not(.motion-paused) .memory-copy{will-change:transform}
+.memory-portrait img{border-radius:8px}
+@media(min-width:681px){.memory-portrait{height:min(74svh,700px)}.memory-composition{gap:26px}.memory-copy{padding-left:24px}}
+@media(max-width:680px) and (min-height:741px){.memory-portrait{height:53svh;max-height:450px}.memory-copy{padding-top:16px}.memory-copy .scene-label{margin-bottom:7px}.memory-copy p{margin-top:10px}.memory-copy .story-link{margin-top:3px}}
+.motion-paused .memory-portrait,.motion-paused .memory-copy{transform:none!important;will-change:auto}
+@media(prefers-reduced-motion:reduce){.memory-unified .memory-portrait,.memory-unified .memory-copy{transform:none!important;will-change:auto}}
+
+
+.memory-copy:before{display:none}
+
+/* Mobile: a small portrait expands to the whole available screen. */
+@media(max-width:680px){
+ .memory-unified:not(.motion-paused) .memory-story{height:190svh}
+ .memory-unified:not(.motion-paused) .memory-screen{top:60px;height:calc(100svh - 60px);padding:0;display:block}
+ .memory-unified:not(.motion-paused) .memory-composition{position:relative;display:block;max-width:none;width:100%;height:100%;margin:0}
+ .memory-unified:not(.motion-paused) .memory-portrait{position:absolute;inset:0;width:100%;height:100%;max-height:none;max-width:none;aspect-ratio:auto;border-radius:0;transform:translate3d(0,-10%,0) scale(.56)}
+ .memory-unified:not(.motion-paused) .memory-portrait img{object-fit:cover;object-position:50% 24%;border-radius:0}
+ .memory-unified:not(.motion-paused) .memory-portrait figcaption{display:none}
+ .memory-unified:not(.motion-paused) .memory-copy{position:absolute;inset:auto 0 0;max-width:none;padding:80px 7% 54px;background:linear-gradient(transparent,#090909b8 38%,#090909ed);text-shadow:0 1px 12px #0008}
+ .memory-unified:not(.motion-paused) .memory-copy .scene-label{color:#e4d1a9}
+ .memory-unified:not(.motion-paused) .memory-copy p{color:#eee9df;max-width:350px}
+ .memory-unified:not(.motion-paused) .memory-screen .vertical-scroll-hint{bottom:14px}
+}
+@media(max-width:680px) and (max-height:600px){
+ .memory-unified:not(.motion-paused) .memory-copy{padding:55px 7% 36px}
+ .memory-unified:not(.motion-paused) .memory-copy h2{font-size:28px}
+ .memory-unified:not(.motion-paused) .memory-copy p{font-size:11px;line-height:1.5}
+}

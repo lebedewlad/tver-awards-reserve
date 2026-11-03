@@ -1,0 +1,27 @@
+.partners{border-top:1px solid var(--line)}
+.partners .section-heading{margin-bottom:42px}
+.partners h2{font-size:clamp(34px,4.6vw,64px)}
+.partners-layout{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,6vw,88px)}
+.partners-role{font-size:14px;font-weight:500;color:var(--muted);margin:0 0 20px}
+.partner-feature{display:flex;min-height:320px;height:calc(100% - 43px);flex-direction:column;justify-content:space-between;padding:40px;border:1px solid var(--dark-line);border-radius:24px;background:oklch(.17 .008 85)}
+.partner-general-logo{display:block;object-fit:contain;width:100%;max-width:330px;height:170px;margin:auto;flex:none}
+.partner-caption{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:26px}
+.partner-caption strong{font-size:23px;font-weight:600;line-height:1.3}
+.partner-caption small,.partner-name small{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.partner-link .arrow-icon{width:22px;height:22px;flex:none;fill:none;stroke:var(--accent);stroke-width:1.5;stroke-linecap:round;transition:transform .25s var(--ease)}
+.partner-list{display:flex;flex-direction:column}
+.partner-row{display:flex;align-items:center;gap:22px;padding:16px 0;border-bottom:1px solid var(--line);min-height:107px}
+.partner-row:first-child{padding-top:0;min-height:91px}
+.partner-row:last-child{border-bottom:0;padding-bottom:0}
+.partner-name{flex:1;min-width:0}
+.partner-name strong{display:block;font-size:21px;font-weight:500;line-height:1.3}
+.partner-logo{position:relative;display:block;flex:none;width:76px;height:76px;overflow:hidden;background:#fff;border-radius:16px}
+.partner-logo img{display:block;width:100%;height:100%;object-fit:contain}
+.partner-logo--ipapa img{padding:4px}
+/* Frame the supplied circular marks; their original pixels and proportions stay intact. */
+.partner-logo--society{border-radius:50%;background:#090909}
+.partner-logo--society img{position:absolute;width:135%;height:auto;max-width:none;left:50%;top:50%;transform:translate(-50%,-52.7%)}
+.partner-logo--penates{background:#fffffa;border-radius:16px}
+.partner-logo--penates img{position:absolute;width:175%;height:auto;max-width:none;left:50%;top:50%;transform:translate(-50%,-51%)}
+@media(hover:hover){.partner-link:hover .arrow-icon{transform:translate(3px,-3px)}.partner-feature:hover{border-color:var(--accent)}.partner-row:hover .partner-name strong{color:var(--accent)}}
+@media(max-width:680px){.partners .section-heading{margin-bottom:28px}.partners-layout{grid-template-columns:1fr;gap:32px}.partners-role{font-size:13px;margin-bottom:14px}.partner-feature{min-height:225px;height:auto;padding:24px;border-radius:20px}.partner-general-logo{height:112px;max-width:238px}.partner-caption{margin-top:20px}.partner-caption strong{font-size:20px}.partner-row{min-height:90px;gap:16px;padding:14px 0}.partner-row:first-child{min-height:76px}.partner-logo{width:62px;height:62px}.partner-name strong{font-size:18px}.partner-name small{font-size:11px}}
