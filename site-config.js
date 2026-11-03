@@ -1,1 +1,1 @@
-window.PREMIER_CONFIG=Object.freeze({enabled:false,endpoint:'',consentVersion:'2026-10-22.2',updatesConsentVersion:'2026-10-22.2'});
+window.PREMIER_CONFIG=Object.freeze({enabled:true,endpoint:'https://tver-awards-intake.djkvant92.workers.dev/api/applications',consentVersion:'2026-11-03.reserve1',updatesConsentVersion:'2026-11-03.reserve1'});
