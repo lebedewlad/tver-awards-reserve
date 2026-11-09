@@ -1,4 +1,4 @@
-/* Original Tver Awards pixel companion. No remote assets, telemetry or permissions. */
+/* Tver Awards illustrated kitten companion. No remote assets, telemetry or permissions. */
 (() => {
   'use strict';
   if (document.querySelector('.awards-cat')) return;
@@ -8,7 +8,7 @@
   const root = document.createElement('aside');
   root.className = 'awards-cat'; root.hidden = true;
   root.setAttribute('aria-label', 'Кот премии');
-  root.innerHTML = `<button class="awards-cat__pet" type="button" aria-label="Кот премии. Погладить или поиграть" aria-expanded="false" aria-controls="awards-cat-panel"><canvas width="48" height="36" aria-hidden="true"></canvas></button>
+  root.innerHTML = `<button class="awards-cat__pet" type="button" aria-label="Кот премии. Погладить или поиграть" aria-expanded="false" aria-controls="awards-cat-panel"><canvas width="256" height="224" aria-hidden="true"></canvas></button>
     <section class="awards-cat__panel" id="awards-cat-panel" aria-label="Поиграть с котом" hidden><strong>Кот премии</strong><button type="button" class="awards-cat__close" aria-label="Закрыть меню кота">×</button><p>Гуляет сам по себе.<br>Можно погладить или перетащить.</p><div class="awards-cat__actions"><button type="button" data-cat-action="pet">Погладить</button><button type="button" data-cat-action="play">Мячик</button></div><button type="button" class="awards-cat__hide">Спрятать кота</button></section>
     <span class="awards-cat__bubble" role="status" hidden></span><span class="awards-cat__ball" hidden></span>`;
   document.body.append(root);
@@ -23,6 +23,7 @@
   (document.querySelector('.footer') || document.body).append(setting);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const small = matchMedia('(max-width: 600px)');
+  let spriteLoaded = false;
   let hidden = readHidden(), ready = false, blocked = false, menu = false, hovered = false;
   let x = 20, direction = 1, state = 'walk', stateTime = 0, elapsed = 0, last = 0, raf = 0, lastDraw = -1;
   let drag = null, lift = 0, target = null, bubbleTimer = 0, suppressClick = false;
@@ -31,7 +32,7 @@
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   function metrics() {
     // Reserve the bottom-right corner for the site's animation control.
-    const width = small.matches ? 84 : 96;
+    const width = small.matches ? 112 : 128;
     bounds = Math.max(12, innerWidth - width - (innerWidth < 360 ? 100 : 154));
     panelWidth = Math.min(264, innerWidth - 24);
     x = clamp(x, 12, bounds);
@@ -43,7 +44,7 @@
     panel.style.left = `${clamp(x - 20, 12, innerWidth - panelWidth - 12)}px`;
     panel.style.width = `${panelWidth}px`;
     bubble.style.left = `${clamp(x - 10, 12, Math.max(12, innerWidth - 180))}px`;
-    if (target !== null) ball.style.transform = `translateX(${target + (small.matches ? 42 : 48)}px)`;
+    if (target !== null) ball.style.transform = `translateX(${target + (small.matches ? 56 : 64)}px)`;
   }
   function say(text, ms = 2000) {
     clearTimeout(bubbleTimer); bubble.textContent = text; bubble.hidden = false;
@@ -118,63 +119,37 @@
       x = clamp(x + direction*24,12,bounds); position(); draw(0);
     }
   });
-  // Pixel drawing at native 48×36. Each component is authored here, not copied from another widget.
-  const colors = { outline:'#695139', fur:'#dbc18c', light:'#f4dfad', shade:'#b6925b', dark:'#282820', nose:'#986450' };
-  function rect(x,y,w,h,color) { ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h); }
-  function oval(cx,cy,rx,ry,color) {
-    ctx.fillStyle=color;
-    for(let y=Math.floor(cy-ry);y<=cy+ry;y++) {
-      const n=1-((y-cy)/ry)**2;
-      if(n<0)continue;
-      const half=Math.floor(rx*Math.sqrt(n)); ctx.fillRect(Math.round(cx)-half,y,half*2+1,1);
-    }
-  }
-  function heart(x,y) {
-    const rows=['0110110','1111111','1111111','0111110','0011100','0001000'];
-    rows.forEach((row,j)=>[...row].forEach((p,i)=>{if(p==='1')rect(x+i,y+j,1,1,colors.light);}));
-  }
-  function draw(frame) {
-    ctx.clearRect(0,0,48,36);
-    const sleeping=state==='sleep', happy=state==='happy', held=drag?.moved;
-    const walking=(state==='walk'||state==='chase')&&!menu&&!hovered&&!calm()&&!drag;
-    const step=walking ? [0,1,0,-1][frame%4] : 0;
-    ctx.save(); if(direction<0){ctx.translate(48,0);ctx.scale(-1,1);}
-    // Soft ground shadow and upright curled tail.
-    if(!held) oval(25,34,17,1,'#0007');
-    const tail=walking ? Math.floor(frame/2)%2 : Math.floor(elapsed*1.5)%2;
-    if(!sleeping) {
-      rect(5,15+tail,3,10,colors.outline);rect(4,12+tail,3,6,colors.outline);rect(6,10+tail,5,3,colors.outline);
-      rect(6,14+tail,2,9,colors.fur);rect(5,12+tail,2,5,colors.light);rect(7,11+tail,3,2,colors.light);
-    }
-    oval(22,25,sleeping?15:13,sleeping?7:8,colors.outline);
-    oval(22,24,sleeping?14:12,sleeping?6:7,colors.fur);
-    oval(19,23,7,5,colors.light);
-    rect(16,19,2,4,colors.shade);rect(21,18,2,4,colors.shade);rect(26,19,2,3,colors.shade);
-    if(!sleeping){
-      rect(14-step,28,4,5+(held?1:0),colors.shade);rect(25+step,28,4,5+(held?1:0),colors.shade);
-      rect(11+step,28,4,5,colors.fur);rect(29-step,28,4,5,colors.fur);
-      rect(10+step,32,5,2,colors.light);rect(29-step,32,5,2,colors.light);
-    }
-    const hy=sleeping?25:17+(walking&&step===1?1:0);
-    // Ears with warm inner pixels, cheek tufts, muzzle.
-    if(!sleeping){
-      rect(26,hy-10,3,7,colors.outline);rect(27,hy-9,3,6,colors.fur);rect(28,hy-7,2,4,colors.nose);
-      rect(37,hy-10,3,7,colors.outline);rect(36,hy-9,3,6,colors.fur);rect(36,hy-7,2,4,colors.nose);
-    }
-    oval(33,hy,9,sleeping?5:8,colors.outline);oval(33,hy-1,8,sleeping?4:7,colors.fur);
-    rect(24,hy+1,3,2,colors.fur);rect(40,hy+1,2,2,colors.light);
-    oval(34,hy+3,5,2,colors.light);
-    if(!sleeping){rect(31,hy-7,2,3,colors.shade);rect(35,hy-7,2,3,colors.shade);}
-    const blink=sleeping||happy||Math.floor(elapsed*10)%53>=50;
-    if(blink){rect(28,hy,3,1,colors.dark);rect(36,hy,3,1,colors.dark);}
-    else {rect(28,hy-2,2,3,colors.dark);rect(37,hy-2,2,3,colors.dark);rect(28,hy-2,1,1,colors.light);rect(37,hy-2,1,1,colors.light);}
-    rect(33,hy+1,2,1,colors.nose);rect(33,hy+2,1,1,colors.nose);
-    // Black-tie detail for an awards-night guest.
-    if(!sleeping){rect(29,hy+7,3,3,colors.dark);rect(34,hy+7,3,3,colors.dark);rect(32,hy+8,2,1,colors.outline);}
-    if(sleeping){oval(15,29,8,3,colors.shade);oval(17,28,6,2,colors.fur);rect(37,8,5,1,colors.fur);rect(40,9,1,1,colors.fur);rect(39,10,1,1,colors.fur);rect(37,11,5,1,colors.fur);}
+  // The same illustrated kitten in four walking frames and four expressive poses.
+  // Keep one sheet decoded in memory; canvas clips cells without extra image requests.
+  const sheet = new Image();
+  sheet.decoding = 'async'; sheet.fetchPriority = 'low';
+  const cells = [
+    [0,0,444,444,371], [444,0,443,444,373],
+    [887,0,443,444,372], [1330,0,444,444,373],
+    [0,444,444,443,382], [444,444,443,443,387],
+    [887,444,443,443,366], [1330,444,444,443,411]
+  ];
+  function draw() {
+    ctx.clearRect(0,0,256,224);
+    if (!spriteLoaded) return;
+    const moving=(state==='walk'||state==='chase')&&!menu&&!hovered&&!calm()&&!drag;
+    const held=!!drag?.moved;
+    const pose=held?7:state==='happy'?5:state==='sleep'?6:moving?Math.floor(elapsed*(state==='chase'?12:6))%4:4;
+    const [sx,sy,sw,sh,feet]=cells[pose];
+    const scale=.25;
+    const breath=calm()||moving||held?0:Math.sin(elapsed*2.1)*.55;
+    ctx.save();ctx.scale(2,2);
+    if(direction<0){ctx.translate(128,0);ctx.scale(-1,1);}
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+    // Baseline normalization stops the feet jumping between generated frames.
+    const dw=sw*scale,dh=sh*scale+breath;
+    const dy=105-feet*(dh/sh);
+    ctx.drawImage(sheet,sx,sy,sw,sh,(128-dw)/2,dy,dw,dh);
     ctx.restore();
-    if(happy) heart(20,calm()?2:2+Math.floor(elapsed*3)%2);
   }
+  sheet.onload=()=>{spriteLoaded=true;sync();};
+  sheet.onerror=()=>{root.hidden=true;setting.hidden=true;};
+  sheet.src='/assets/cat/kitten-v2.webp';
   function tick(now) {
     raf=0;
     if(root.hidden||document.hidden) {last=0;return;}
@@ -197,7 +172,7 @@
       else if(state==='sleep'&&stateTime>9){state='walk';stateTime=0;}
     }
     position();
-    const frame=Math.floor(elapsed*(state==='chase'?12:7));
+    const frame=Math.floor(elapsed*24);
     if(frame!==lastDraw){draw(frame);lastDraw=frame;}
     raf=requestAnimationFrame(tick);
   }
@@ -205,7 +180,7 @@
   function sync(){
     const consent=document.getElementById('analytics-consent');
     blocked=!!document.querySelector('dialog[open]') || !!(consent&&!consent.hidden) || !!document.activeElement?.matches('input,textarea,select,[contenteditable="true"]');
-    root.hidden=hidden||blocked||!ready;
+    root.hidden=hidden||blocked||!ready||!spriteLoaded;
     if(root.hidden){if(raf)cancelAnimationFrame(raf);raf=0;last=0;drag=null;lift=0;closeMenu();}
     else {position();draw(0);kick();}
   }
