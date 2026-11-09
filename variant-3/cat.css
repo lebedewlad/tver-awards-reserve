@@ -28,11 +28,3 @@
 .awards-cat__landing{position:absolute;left:0;top:0;height:2px;border-radius:2px;background:#dbc18c;pointer-events:none;box-shadow:0 0 5px #dbc18c60}
 
 .awards-cat__bubble{max-width:calc(100% - 24px);white-space:normal;width:max-content}
-
-/* Direct petting is the primary action; the small menu is only for toys/settings. */
-.awards-cat__pet{cursor:pointer;-webkit-touch-callout:none}
-.awards-cat__pet.is-grabbed,.awards-cat__pet:active{cursor:grabbing}
-.awards-cat__menu-toggle{position:absolute;left:0;top:0;width:44px;height:44px;padding:0;border:0;background:transparent;color:#dbc18c;pointer-events:auto;touch-action:manipulation;font:24px/1 Arial,sans-serif}
-.awards-cat__menu-toggle span{display:grid;place-items:center;width:26px;height:26px;margin:auto;border-radius:50%;background:#181815;border:1px solid #65583f}
-.awards-cat__menu-toggle:hover span,.awards-cat__menu-toggle:focus-visible span{background:#302b23}
-.awards-cat__pet.is-grabbed canvas{filter:drop-shadow(0 4px 3px #0008)}
