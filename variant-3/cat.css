@@ -18,3 +18,13 @@
 .awards-cat-setting{min-height:44px;background:none;border:0;color:inherit;padding:0;font:inherit;text-align:left;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:600px){.awards-cat__pet{width:112px;height:98px}.awards-cat canvas{width:112px;height:98px}.awards-cat__panel{bottom:calc(var(--cat-floor) + 108px)}.awards-cat__bubble{bottom:calc(var(--cat-floor) + 102px)}}
 @media(prefers-reduced-motion:reduce){.awards-cat *{animation:none!important;transition:none!important}}
+
+/* Perched controls and a 44px touch target around the throwable ball. */
+.awards-cat__panel,.awards-cat__bubble{bottom:auto}
+.awards-cat__ball{top:0;bottom:auto;width:44px;height:44px;padding:0;border:0;background:none;pointer-events:auto;touch-action:none;cursor:grab}
+.awards-cat__ball:active{cursor:grabbing}
+.awards-cat__ball::before{content:"";position:absolute;inset:11px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff2ce,#dbc18c 35%,#86602e);box-shadow:0 2px 4px #0006}
+.awards-cat__ball:focus-visible{outline:2px solid #dbc18c;outline-offset:0}
+.awards-cat__landing{position:absolute;left:0;top:0;height:2px;border-radius:2px;background:#dbc18c;pointer-events:none;box-shadow:0 0 5px #dbc18c60}
+
+.awards-cat__bubble{max-width:calc(100% - 24px);white-space:normal;width:max-content}
