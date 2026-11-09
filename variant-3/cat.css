@@ -1,0 +1,20 @@
+/* A small optional companion; all positioning is isolated from the page. */
+.awards-cat{position:fixed;inset:0;z-index:40;pointer-events:none;contain:layout style;--cat-floor:max(10px,env(safe-area-inset-bottom))}
+.awards-cat[hidden],.awards-cat [hidden]{display:none!important}
+.awards-cat__pet{position:absolute;left:0;bottom:var(--cat-floor);width:96px;height:78px;padding:0;border:0;background:transparent;pointer-events:auto;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.awards-cat__pet:active{cursor:grabbing}
+.awards-cat__pet:focus-visible{outline:2px solid #dbc18c;outline-offset:0;border-radius:12px}
+.awards-cat canvas{display:block;width:96px;height:72px;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 2px 1px #0008)}
+.awards-cat__panel{position:absolute;bottom:calc(var(--cat-floor) + 88px);width:264px;padding:17px;background:#181815;color:#f0eeea;border:1px solid #65583f;border-radius:14px;pointer-events:auto;font:400 13px/1.5 Manrope,Arial,sans-serif}
+.awards-cat__panel strong{display:block;font-size:16px;font-weight:700;padding-right:28px;color:#dbc18c}
+.awards-cat__panel p{margin:6px 0 14px;color:#c2bfb6;font-size:12px;line-height:1.5}
+.awards-cat__actions{display:flex;gap:8px}
+.awards-cat__actions button{flex:1;min-height:44px;background:#dbc18c;color:#141414;border:0;border-radius:8px;padding:8px 10px;font:600 12px Manrope,Arial,sans-serif}
+.awards-cat__actions button+button{background:#302b23;color:#f0eeea}
+.awards-cat__close{position:absolute;right:7px;top:5px;width:44px;height:44px;background:none;border:0;color:#c2bfb6;font:24px/1 Arial,sans-serif}
+.awards-cat__hide{display:block;margin-top:9px;min-height:34px;width:100%;padding:4px;background:none;border:0;color:#c2bfb6;text-decoration:underline;text-underline-offset:3px;font:400 11px Manrope,Arial,sans-serif}
+.awards-cat__bubble{position:absolute;bottom:calc(var(--cat-floor) + 82px);padding:8px 12px;border-radius:9px;background:#dbc18c;color:#15140f;white-space:nowrap;font:600 12px/1.4 Manrope,Arial,sans-serif;pointer-events:none}
+.awards-cat__ball{position:absolute;left:0;bottom:calc(var(--cat-floor) + 6px);width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff2ce,#dbc18c 35%,#86602e);pointer-events:none}
+.awards-cat-setting{min-height:44px;background:none;border:0;color:inherit;padding:0;font:inherit;text-align:left;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:600px){.awards-cat__pet{width:84px;height:68px}.awards-cat canvas{width:84px;height:63px}.awards-cat__panel{bottom:calc(var(--cat-floor) + 78px)}.awards-cat__bubble{bottom:calc(var(--cat-floor) + 72px)}}
+@media(prefers-reduced-motion:reduce){.awards-cat *{animation:none!important;transition:none!important}}
