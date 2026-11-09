@@ -76,7 +76,7 @@
     if(!el?.isConnected||!rect){perch=null;state='sit';stateTime=0;return;}
     const out=rect.top<catHeight+65||rect.top>innerHeight-24||Number(getComputedStyle(el).opacity)<.3;
     pet.style.visibility=out?'hidden':'';
-    if(out){if(menu)closeMenu();bubble.hidden=true;}
+    if(out){menu=false;panel.hidden=true;pet.setAttribute('aria-expanded','false');bubble.hidden=true;}
     const feet=rect.top+rect.height*.27;
     x=clamp(rect.left+rect.width*perch.ratio-catWidth/2,12,fullBound());
     lift=Math.max(0,floorY-feet);
