@@ -8,12 +8,13 @@
   const root = document.createElement('aside');
   root.className = 'awards-cat'; root.hidden = true;
   root.setAttribute('aria-label', 'Кот премии');
-  root.innerHTML = `<button class="awards-cat__pet" type="button" aria-label="Кот премии. Погладить или поиграть" aria-expanded="false" aria-controls="awards-cat-panel"><canvas width="256" height="224" aria-hidden="true"></canvas></button>
-    <section class="awards-cat__panel" id="awards-cat-panel" aria-label="Поиграть с котом" hidden><strong>Кот премии</strong><button type="button" class="awards-cat__close" aria-label="Закрыть меню кота">×</button><p>Перетащите кота на заголовок.<br>Мячик можно бросить пальцем или мышью.</p><div class="awards-cat__actions"><button type="button" data-cat-action="pet">Погладить</button><button type="button" data-cat-action="play">Мячик</button></div><button type="button" class="awards-cat__hide">Спрятать кота</button></section>
+  root.innerHTML = `<button class="awards-cat__pet" type="button" aria-label="Погладить котика" aria-describedby="awards-cat-help"><canvas width="256" height="224" aria-hidden="true"></canvas></button><button class="awards-cat__menu-toggle" type="button" aria-label="Игры и настройки кота" aria-expanded="false" aria-controls="awards-cat-panel"><span aria-hidden="true">⋯</span></button>
+    <section class="awards-cat__panel" id="awards-cat-panel" aria-label="Поиграть с котом" hidden><strong>Кот премии</strong><button type="button" class="awards-cat__close" aria-label="Закрыть меню кота">×</button><p id="awards-cat-help">Гладьте курсором или пальцем.<br>На телефоне удержите, чтобы поднять. Котика можно посадить на заголовок.</p><div class="awards-cat__actions"><button type="button" data-cat-action="down">Спустить на пол</button><button type="button" data-cat-action="play">Мячик</button></div><button type="button" class="awards-cat__hide">Спрятать кота</button></section>
     <span class="awards-cat__bubble" role="status" hidden></span><button class="awards-cat__ball" type="button" aria-label="Мячик. Потяните и отпустите, чтобы бросить. Нажмите, чтобы подбросить." hidden></button><span class="awards-cat__landing" hidden aria-hidden="true"></span>`;
   document.body.append(root);
   const pet = root.querySelector('.awards-cat__pet');
   const panel = root.querySelector('.awards-cat__panel');
+  const menuToggle=root.querySelector('.awards-cat__menu-toggle');
   const bubble = root.querySelector('.awards-cat__bubble');
   const ball = root.querySelector('.awards-cat__ball');
   const landing = root.querySelector('.awards-cat__landing');
@@ -29,6 +30,30 @@
   let x = 20, direction = 1, state = 'walk', stateTime = 0, elapsed = 0, last = 0, raf = 0, lastDraw = -1;
   let drag = null, lift = 0, bubbleTimer = 0, suppressClick = false;
   let bubbleWidth=180;
+  let holdTimer=0,relaxTimer=0,stroke=null,lean=0,lastPurr=-10000;
+  function gestureIntent(type,held,dx,dy){
+    if(Math.hypot(dx,dy)<=7)return 'pending';
+    return type==='touch'&&!held?'stroke':'drag';
+  }
+  function petting(px,announce=false){
+    if(menu||drag?.moved||drag?.grabbed||root.hidden)return;
+    state='happy';stateTime=0;
+    lean=calm()?0:clamp((px-(x+catWidth/2))/(catWidth/2),-1,1);
+    const now=performance.now();
+    if(announce||now-lastPurr>6000){say('Мур-р…',1300);lastPurr=now;}
+    clearTimeout(relaxTimer);
+    relaxTimer=setTimeout(()=>{lean=0;if(state==='happy'&&!drag){state='sit';stateTime=0;}draw();kick();},1800);
+    draw();kick();
+  }
+  function strokeAt(e){
+    const now=e.timeStamp;
+    if(!stroke||now-stroke.t>450){stroke={x:e.clientX,y:e.clientY,t:now,distance:0};return;}
+    const d=Math.hypot(e.clientX-stroke.x,e.clientY-stroke.y);
+    stroke.distance+=Math.min(d,30);stroke.x=e.clientX;stroke.y=e.clientY;stroke.t=now;
+    if(stroke.distance>=12){stroke.distance=0;petting(e.clientX);}
+  }
+  function clearHold(){clearTimeout(holdTimer);holdTimer=0;}
+
   let bounds = 200, panelWidth = 264, catWidth = 128, catHeight = 112, floorY = 0;
   let perch = null, candidate = null, platforms = [], ballDrag = null, ballMoved = false;
   const toy = { x:0, y:0, vx:0, vy:0, active:false, flying:false, caught:false };
@@ -76,7 +101,7 @@
     if(!el?.isConnected||!rect){perch=null;state='sit';stateTime=0;return;}
     const out=rect.top<catHeight+65||rect.top>innerHeight-24||Number(getComputedStyle(el).opacity)<.3;
     pet.style.visibility=out?'hidden':'';
-    if(out){menu=false;panel.hidden=true;pet.setAttribute('aria-expanded','false');bubble.hidden=true;}
+    if(out){menu=false;panel.hidden=true;menuToggle.setAttribute('aria-expanded','false');bubble.hidden=true;}
     const feet=rect.top+rect.height*.27;
     x=clamp(rect.left+rect.width*perch.ratio-catWidth/2,12,fullBound());
     lift=Math.max(0,floorY-feet);
@@ -149,6 +174,7 @@
   }
   function position() {
     if(!perch)pet.style.visibility='';
+    menuToggle.style.visibility=pet.style.visibility;
     pet.style.transform = `translate3d(${x.toFixed(1)}px,${(-lift).toFixed(1)}px,0)`;
     panel.style.left = `${clamp(x - 20, 12, innerWidth - panelWidth - 12)}px`;
     panel.style.width = `${panelWidth}px`;
@@ -156,6 +182,7 @@
     if(toy.active)ball.style.transform=`translate3d(${toy.x-22}px,${toy.y-22}px,0)`;
     // Keep controls close to a perched cat and inside short mobile viewports.
     const catTop=floorY+7*(catWidth/128)-catHeight-lift;
+    menuToggle.style.transform=`translate3d(${clamp(x+catWidth-10,8,innerWidth-48)}px,${clamp(catTop+catHeight-42,70,innerHeight-52)}px,0)`;
     if(menu){const h=panel.offsetHeight;panel.style.top=`${clamp(catTop-h-10,12,innerHeight-h-12)}px`;}
     bubble.style.top=`${clamp(catTop-42,12,innerHeight-48)}px`;
   }
@@ -164,13 +191,13 @@
     bubbleTimer = setTimeout(() => { bubble.hidden = true; }, ms);
   }
   function closeMenu(focus = false) {
-    menu = false; panel.hidden = true; pet.setAttribute('aria-expanded','false');
+    menu = false; panel.hidden = true; menuToggle.setAttribute('aria-expanded','false');
     if (focus && !root.hidden) pet.focus({preventScroll:true});
     kick();
   }
   function openMenu() {
     menu = true; state = 'sit'; stateTime = 0; stopToy();
-    bubble.hidden = true; panel.hidden = false; pet.setAttribute('aria-expanded','true');
+    bubble.hidden = true; panel.hidden = false; menuToggle.setAttribute('aria-expanded','true');
     position(); draw(0); panel.querySelector('[data-cat-action]').focus({preventScroll:true});
   }
   function hide(value) {
@@ -182,50 +209,71 @@
   setting.textContent = hidden ? 'Вернуть кота' : 'Спрятать кота';
   root.querySelector('.awards-cat__hide').addEventListener('click', () => hide(true));
   root.querySelector('.awards-cat__close').addEventListener('click', () => closeMenu(true));
-  root.querySelector('[data-cat-action="pet"]').addEventListener('click', () => {
-    closeMenu(true); state = 'happy'; stateTime = 0; say('Мур-р. Спасибо!'); draw(0); kick();
+  root.querySelector('[data-cat-action="down"]').addEventListener('click',()=>{
+    closeMenu(true);perch=null;state='sit';stateTime=0;lean=0;
+    if(calm())lift=0;position();draw();kick();
   });
   root.querySelector('[data-cat-action="play"]').addEventListener('click',showToy);
-  pet.addEventListener('click', event => {
-    if (suppressClick && event.detail !== 0) { suppressClick = false; return; }
-    menu ? closeMenu() : openMenu();
+  menuToggle.addEventListener('click',()=>{clearHold();menu?closeMenu(true):openMenu();});
+  menuToggle.addEventListener('pointerenter',()=>{hovered=true;});
+  menuToggle.addEventListener('pointerleave',()=>{hovered=false;});
+  pet.addEventListener('click',event=>{
+    if(suppressClick&&event.detail!==0){suppressClick=false;return;}
+    if(menu)closeMenu();
+    petting(x+catWidth*.6,true);
   });
-  pet.addEventListener('pointerenter', () => { hovered = true; });
-  pet.addEventListener('pointerleave', () => { hovered = false; });
-  pet.addEventListener('pointerdown', event => {
-    if (event.button !== 0) return;
-    suppressClick = false;
-    drag = { id:event.pointerId, start:event.clientX, startY:event.clientY, x, lift, moved:false };
-    collectPlatforms();
-    pet.setPointerCapture(event.pointerId);
+  pet.addEventListener('contextmenu',e=>e.preventDefault());
+  pet.addEventListener('pointerenter',()=>{hovered=true;stroke=null;});
+  pet.addEventListener('pointerleave',()=>{hovered=false;stroke=null;});
+  pet.addEventListener('pointerdown',event=>{
+    if(event.button!==0||drag)return;
+    clearHold();clearTimeout(relaxTimer);suppressClick=false;stroke=null;
+    drag={id:event.pointerId,type:event.pointerType,start:event.clientX,startY:event.clientY,x,lift,moved:false,grabbed:false,stroked:false};
+    collectPlatforms();pet.setPointerCapture(event.pointerId);
+    if(event.pointerType==='touch'){
+      // Small immediate response, then an intentional stationary hold to pick up.
+      petting(event.clientX);
+      holdTimer=setTimeout(()=>{
+        if(!drag||drag.stroked||root.hidden)return;
+        drag.grabbed=true;lean=0;state='sit';bubble.hidden=true;
+        pet.classList.add('is-grabbed');draw();kick();
+      },350);
+    }
   });
-  pet.addEventListener('pointermove', event => {
-    if (!drag || event.pointerId !== drag.id) return;
-    const dx = event.clientX-drag.start, dy = event.clientY-drag.startY;
-    if (Math.hypot(dx,dy) > 7) drag.moved = true;
-    if (!drag.moved) return;
-    if (menu) closeMenu();
-    stopToy();perch=null;
-    direction = dx < 0 ? -1 : 1;
-    x = clamp(drag.x + dx,12,fullBound());
-    lift = clamp(drag.lift-dy,0,Math.max(0,floorY-100));
-    previewLanding(findPlatform(event.clientX,event.clientY));
-    position(); draw(0);
+  pet.addEventListener('pointermove',event=>{
+    if(!drag){if(event.pointerType!=='touch'&&event.buttons===0)strokeAt(event);return;}
+    if(event.pointerId!==drag.id)return;
+    const dx=event.clientX-drag.start,dy=event.clientY-drag.startY;
+    const intent=gestureIntent(drag.type,drag.grabbed,dx,dy);
+    if(intent==='pending'&&!drag.moved)return;
+    if(intent==='stroke'&&!drag.moved){
+      clearHold();drag.stroked=true;
+      const rect=pet.getBoundingClientRect();
+      if(event.clientX>=rect.left-14&&event.clientX<=rect.right+14&&event.clientY>=rect.top-14&&event.clientY<=rect.bottom+14)strokeAt(event);
+      return;
+    }
+    clearHold();drag.moved=true;lean=0;
+    if(menu)closeMenu();stopToy();perch=null;
+    direction=dx<0?-1:1;
+    x=clamp(drag.x+dx,12,fullBound());lift=clamp(drag.lift-dy,0,Math.max(0,floorY-100));
+    previewLanding(findPlatform(event.clientX,event.clientY));position();draw();
   });
-  function release(event) {
-    if (!drag || event.pointerId !== drag.id) return;
-    suppressClick = drag.moved;
-    if (pet.hasPointerCapture(event.pointerId)) pet.releasePointerCapture(event.pointerId);
-    if(drag.moved&&candidate&&event.type!=='pointercancel'){
+  function release(event){
+    if(!drag||event.pointerId!==drag.id)return;
+    clearHold();pet.classList.remove('is-grabbed');
+    const wasDragging=drag.moved,wasStroking=drag.stroked,wasHeld=drag.grabbed;
+    suppressClick=wasDragging||wasStroking||wasHeld||event.type==='pointercancel';
+    if(pet.hasPointerCapture(event.pointerId))pet.releasePointerCapture(event.pointerId);
+    if(wasDragging&&candidate&&event.type!=='pointercancel'){
       perch={range:candidate.range,index:candidate.index,ratio:clamp((event.clientX-candidate.left)/(candidate.right-candidate.left),0,1)};
       updatePerch();say('Здесь и посижу',1800);
     }
-    previewLanding(null);drag = null; state = 'sit'; stateTime = 0;
-    if (calm()&&!perch) lift = 0;
-    position();draw();
-    kick();
+    previewLanding(null);drag=null;stroke=null;
+    if(wasDragging||wasHeld||event.type==='pointercancel'){state='sit';stateTime=0;lean=0;}
+    else if(wasStroking)petting(event.clientX);
+    if(calm()&&!perch)lift=0;position();draw();kick();
   }
-  pet.addEventListener('pointerup',release); pet.addEventListener('pointercancel',release);
+  pet.addEventListener('pointerup',release);pet.addEventListener('pointercancel',release);
   document.addEventListener('pointerdown', event => { if (menu && !root.contains(event.target)) closeMenu(); },{passive:true});
   root.addEventListener('keydown', event => {
     if (event.key === 'Escape') { event.preventDefault(); stopToy();previewLanding(null);closeMenu(true); }
@@ -248,13 +296,17 @@
     ctx.clearRect(0,0,256,224);
     if (!spriteLoaded) return;
     const moving=(state==='walk'||state==='chase')&&!perch&&!menu&&(!hovered||state==='chase')&&!calm()&&!drag;
-    const held=!!drag?.moved||(!perch&&lift>1);
+    const held=!!(drag?.moved||drag?.grabbed)||(!perch&&lift>1);
     const pose=held?7:state==='happy'?5:state==='sleep'?6:moving?Math.floor(elapsed*(state==='chase'?12:6))%4:4;
     const [sx,sy,sw,sh,feet]=cells[pose];
     const scale=.25;
     const breath=calm()||moving||held?0:Math.sin(elapsed*2.1)*.55;
     ctx.save();ctx.scale(2,2);
     if(direction<0){ctx.translate(128,0);ctx.scale(-1,1);}
+    if(state==='happy'&&!calm()&&!held){
+      // Lean gently towards the stroke, pivoting at the paws so they stay grounded.
+      ctx.translate(64,105);ctx.rotate(lean*direction*.035);ctx.translate(-64,-105);
+    }
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
     // Baseline normalization stops the feet jumping between generated frames.
     const dw=sw*scale,dh=sh*scale+breath;
@@ -301,7 +353,7 @@
     const consent=document.getElementById('analytics-consent');
     blocked=!!document.querySelector('dialog[open]') || !!(consent&&!consent.hidden) || !!document.activeElement?.matches('input,textarea,select,[contenteditable="true"]');
     root.hidden=hidden||blocked||!ready||!spriteLoaded;
-    if(root.hidden){if(raf)cancelAnimationFrame(raf);raf=0;last=0;drag=null;ballDrag=null;previewLanding(null);if(!perch)lift=0;closeMenu();}
+    if(root.hidden){clearHold();clearTimeout(relaxTimer);pet.classList.remove('is-grabbed');stroke=null;lean=0;if(raf)cancelAnimationFrame(raf);raf=0;last=0;drag=null;ballDrag=null;previewLanding(null);if(!perch)lift=0;closeMenu();}
     else {position();draw(0);kick();}
   }
   // Observe only UI state, not animated inline styles (avoids work on every frame).
@@ -309,7 +361,7 @@
   document.querySelectorAll('dialog,#analytics-consent').forEach(el=>observer.observe(el,{attributes:true,attributeFilter:['open','hidden']}));
   new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
   document.addEventListener('focusin',sync);document.addEventListener('focusout',()=>queueMicrotask(sync));
-  document.addEventListener('visibilitychange',()=>{ if(document.hidden){cancelAnimationFrame(raf);raf=0;last=0;}else sync(); });
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden){clearHold();cancelAnimationFrame(raf);raf=0;last=0;}else sync(); });
   window.addEventListener('resize',metrics,{passive:true});
   window.addEventListener('scroll',()=>{if(perch){updatePerch();position();draw();kick();}if(drag)collectPlatforms();},{passive:true});
   reduced.addEventListener('change',sync);
