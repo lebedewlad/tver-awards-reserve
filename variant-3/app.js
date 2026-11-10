@@ -36,10 +36,16 @@ const nominations=[
   "Для диджеев, которые создают атмосферу на танцполе и событиях города. Расскажите о выступлениях и музыкальном почерке, добавьте ссылки на сеты или записи."
  ],
  [
-  "creative",
-  "Творческие проекты",
-  "Студии, кружки и творческие объединения",
-  "Для детских кружков, танцевальных студий, творческих школ и других объединений, где люди раскрывают свои способности. Заявку подаёт совершеннолетний представитель проекта. Укажите название, направления занятий и достижения, добавьте страницу проекта."
+  "creative_project",
+  "Творческий проект года",
+  "Культурные проекты, которые меняют город",
+  "Для авторов и команд, которые создают культурные и междисциплинарные проекты для города — от паблик-арта и фестивалей до театральных перформансов на необычных площадках. Расскажите о своём проекте, его влиянии на город и вовлечении жителей, поделитесь фото, видео или ссылкой на страницу проекта."
+ ],
+ [
+  "children_projects",
+  "Проекты для детей",
+  "Студии, кружки и занятия для детей",
+  "Для педагогов и наставников, которые ведут творческие студии и кружки для детей — от ИЗО и музыки до театра и робототехники. Расскажите о своих занятиях и воспитанниках, поделитесь фото с занятий, видео или страницей студии с примерами работ."
  ],
  [
   "doctor",
@@ -73,7 +79,7 @@ const nominationPreview=document.getElementById('nomination-preview');
 function describeNomination(){
  const item=nominations.find(row=>row[0]===select.value);
  document.getElementById('nominee-dialog-title').textContent=item?item[1]:'Выберите свою номинацию';
- document.getElementById('nominee-dialog-desc').textContent=item?item[3]:'Десять направлений для людей и проектов Твери. Выберите подходящее в форме и расскажите о своём деле.';
+ document.getElementById('nominee-dialog-desc').textContent=item?item[3]:'Одиннадцать направлений для людей и проектов Твери. Выберите подходящее в форме и расскажите о своём деле.';
 }
 window.PremierNominations={preview(){describeNomination();nominationPreview.hidden=false;nomineeForm.hidden=true;nomineeDialog.querySelector('.dialog-footnote').hidden=true;document.getElementById('nominee-dialog-desc').hidden=false;}};
 select.addEventListener('change',describeNomination);
