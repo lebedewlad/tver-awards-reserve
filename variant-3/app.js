@@ -48,12 +48,6 @@ const nominations=[
   "Для педагогов и наставников, которые ведут творческие студии и кружки для детей — от ИЗО и музыки до театра и робототехники. Расскажите о своих занятиях и воспитанниках, поделитесь фото с занятий, видео или страницей студии с примерами работ."
  ],
  [
-  "doctor",
-  "Врач года",
-  "Знания, забота и доверие",
-  "Для врачей, которые помогают людям сохранять и восстанавливать здоровье. Расскажите о специальности, опыте и профессиональных достижениях. Не указывайте личные данные пациентов и сведения об их здоровье."
- ],
- [
   "event_organizer",
   "Организатор событий",
   "Идеи, которые становятся событиями",
@@ -79,7 +73,7 @@ const nominationPreview=document.getElementById('nomination-preview');
 function describeNomination(){
  const item=nominations.find(row=>row[0]===select.value);
  document.getElementById('nominee-dialog-title').textContent=item?item[1]:'Выберите свою номинацию';
- document.getElementById('nominee-dialog-desc').textContent=item?item[3]:'Одиннадцать направлений для людей и проектов Твери. Выберите подходящее в форме и расскажите о своём деле.';
+ document.getElementById('nominee-dialog-desc').textContent=item?item[3]:'Десять направлений для людей и проектов Твери. Выберите подходящее в форме и расскажите о своём деле.';
 }
 window.PremierNominations={preview(){describeNomination();nominationPreview.hidden=false;nomineeForm.hidden=true;nomineeDialog.querySelector('.dialog-footnote').hidden=true;document.getElementById('nominee-dialog-desc').hidden=false;}};
 select.addEventListener('change',describeNomination);
