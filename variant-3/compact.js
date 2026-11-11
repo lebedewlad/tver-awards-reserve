@@ -38,7 +38,7 @@
   });
   const tabs=[...document.querySelectorAll('[data-plan]')],panel=document.getElementById('ticket-panel'),select=document.getElementById('ticket-plan');
   const standardIncludes=[...panel.querySelectorAll('.ticket-includes li')].map(item=>item.textContent);
-  const plans={single:{title:'Для себя',amount:'1 490',quantity:'1 билет на церемонию'},pair:{title:'Вдвоём',amount:'2 490',quantity:'2 билета на церемонию'},vip:{title:'VIP',amount:'9 990',quantity:'1 VIP-билет на церемонию',includes:['Отдельный стол для VIP-гостей','Свой фуршет на столе','Фотозона и профессиональные фото','Активные зоны','Закрытый званый ужин 18 декабря только для VIP-гостей и партнёров']}};
+  const plans={single:{title:'Для себя',amount:'4 990',quantity:'1 билет на церемонию'},pair:{title:'Вдвоём',amount:'8 490',quantity:'2 билета на церемонию'},vip:{title:'VIP',amount:'9 990',quantity:'1 VIP-билет на церемонию',includes:['Отдельный стол для VIP-гостей','Свой фуршет на столе','Фотозона и профессиональные фото','Активные зоны','Закрытый званый ужин 18 декабря только для VIP-гостей и партнёров']}};
   const planOrder=Object.keys(plans);
   let selected='single';
   function choose(plan,focus=false){
