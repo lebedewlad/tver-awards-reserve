@@ -11,7 +11,42 @@
     const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
     return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
   }
-  function showFailure(message, error) {
+  async function sendApplication(data, message) {
+    const endpoints = [...new Set(config.endpoints || [config.endpoint])];
+    let lastError;
+    for (let index=0; index<endpoints.length; index++) {
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(), index===0?10000:15000);
+      try {
+        if(index) message.textContent='Повторяем отправку через запасное соединение…';
+        const response=await fetch(endpoints[index], {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'omit',signal:controller.signal,referrerPolicy:'no-referrer'});
+        const result=await response.json();
+        if(response.status>=500 || [404,405].includes(response.status) || (response.ok && (result.ok!==true || !result.receipt))) {
+          throw Object.assign(new Error('Не удалось подтвердить получение заявки.'),{status:response.status});
+        }
+        return {response,result};
+      } catch(error) {
+        lastError=error;
+      } finally {clearTimeout(timer);}
+    }
+    throw lastError || new Error('Нет доступного соединения.');
+  }
+  function addCopyButton(message, data) {
+    if(!data)return;
+    const labels={lastName:'Фамилия',firstName:'Имя',middleName:'Отчество',fullName:'Имя и фамилия',phone:'Телефон',nomination:'Номинация',achievements:'О себе и достижениях',socialLinks:'Соцсети',ticketPlan:'Гостевой тариф',comment:'Комментарий'};
+    const text=['Tver Awards: '+(data.type==='guest'?'заявка гостя':'заявка номинанта'),...Object.entries(labels).filter(([key])=>data[key]).map(([key,label])=>{
+      let value=data[key];
+      if(key==='nomination'||key==='ticketPlan') {const select=document.querySelector(key==='nomination'?'#nomination':'#ticket-plan');value=select?.selectedOptions[0]?.textContent||value;}
+      return label+': '+value;
+    })].join('\n');
+    const copy=document.createElement('button');copy.type='button';copy.className='button';copy.style.marginTop='12px';copy.textContent='Скопировать заявку';
+    copy.addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(text);copy.textContent='Скопировано — можно отправить организатору';}
+      catch{const field=document.createElement('textarea');field.readOnly=true;field.value=text;field.rows=7;field.style.width='100%';field.setAttribute('aria-label','Текст заявки для копирования');message.append(field);field.focus();field.select();copy.hidden=true;}
+    });
+    message.append(copy);
+  }
+  function showFailure(message, error, data) {
     const network = error.name === 'AbortError' || error instanceof TypeError || error instanceof SyntaxError;
     const code = error.name === 'AbortError' ? 'TIMEOUT' : network ? 'CONNECTION' : error.status ? 'HTTP-'+error.status : 'FORM';
     message.dataset.error = 'true'; message.replaceChildren();
@@ -23,7 +58,7 @@
     help.append('Если ошибка повторяется, позвоните организаторам: ');
     const phone = document.createElement('a'); phone.href='tel:+79038096808'; phone.textContent='+7 (903) 809-68-08'; help.append(phone);
     const details = document.createElement('small'); details.style.display='block'; details.textContent='Код ошибки: '+code;
-    message.append(text, help, details); message.tabIndex=-1; message.focus({preventScroll:true});
+    message.append(text, help, details); addCopyButton(message, data); message.tabIndex=-1; message.focus({preventScroll:true});
   }
   forms.forEach(form => {
     const fields = form.querySelector('.request-fields');
@@ -41,13 +76,13 @@
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (!enabled || pending) return;
-      let controller, timeout;
+      let data;
       try {
         if (!window.PremierForms || !window.PremierForms.validate(form)) {
           if (!window.PremierForms) throw new Error('Validation unavailable');
           return;
         }
-        const data = Object.fromEntries(new FormData(form));
+        data = Object.fromEntries(new FormData(form));
         data.phone = '+' + data.phone.replace(/\D/g, '');
         data.type = form.dataset.requestType;
         data.consentVersion = config.consentVersion;
@@ -60,10 +95,7 @@
         fields.disabled = true;
         message.dataset.error = 'false';
         message.textContent = 'Отправляем заявку…';
-        controller = new AbortController();
-        timeout = setTimeout(() => controller.abort(), 20000);
-        const response = await fetch(config.endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data), credentials:'omit', signal:controller.signal, referrerPolicy:'no-referrer'});
-        const result = await response.json();
+        const {response,result} = await sendApplication(data,message);
         if(!response.ok || result.ok !== true || !result.receipt) throw Object.assign(new Error(result.error || 'Не удалось подтвердить получение заявки. Попробуйте ещё раз.'), {status:response.status});
         message.replaceChildren();message.classList.add('confirmation');message.tabIndex=-1;
         const title=document.createElement('strong');title.className='confirmation-title';title.textContent='Ваша заявка принята';
@@ -79,8 +111,8 @@
         form.reset(); requestId = null; lastPayload = null;
         if(form.dataset.requestType === 'nominee') document.querySelector('#character-count').textContent = '0';
       } catch(error) {
-        showFailure(message, error);
-      } finally {clearTimeout(timeout); pending = false; fields.disabled = false;}
+        showFailure(message, error, data);
+      } finally {pending = false; fields.disabled = false;}
     });
   });
 })();
