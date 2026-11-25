@@ -64,8 +64,9 @@
     const fields = form.querySelector('.request-fields');
     const message = form.querySelector('.form-message');
     const availability = form.closest('dialog').querySelector('[data-form-availability]');
-    fields.disabled = false;
-    form.querySelector('[type=submit]').disabled = !enabled;
+    const nominationsClosed=form.dataset.requestType==='nominee' && config.nomineeIntakeEnabled===false;
+    fields.disabled = nominationsClosed;
+    form.querySelector('[type=submit]').disabled = !enabled || nominationsClosed;
     if(enabled) {availability.textContent = '';availability.hidden = true;} else {availability.hidden = false;availability.textContent = 'Для отправки откройте защищённую версию сайта: https://tver-awards.ru';}
     let pending = false, requestId = null, lastPayload = null;
     const dialog=form.closest('dialog');
@@ -75,7 +76,7 @@
     });
     form.addEventListener('submit', async event => {
       event.preventDefault();
-      if (!enabled || pending) return;
+      if (!enabled || pending || nominationsClosed) return;
       let data;
       try {
         if (!window.PremierForms || !window.PremierForms.validate(form)) {
@@ -112,7 +113,7 @@
         if(form.dataset.requestType === 'nominee') document.querySelector('#character-count').textContent = '0';
       } catch(error) {
         showFailure(message, error, data);
-      } finally {pending = false; fields.disabled = false;}
+      } finally {pending = false; fields.disabled = nominationsClosed;}
     });
   });
 })();

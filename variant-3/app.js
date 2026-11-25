@@ -78,6 +78,7 @@ function describeNomination(){
 window.PremierNominations={preview(){describeNomination();nominationPreview.hidden=false;nomineeForm.hidden=true;nomineeDialog.querySelector('.dialog-footnote').hidden=true;document.getElementById('nominee-dialog-desc').hidden=false;}};
 select.addEventListener('change',describeNomination);
 document.getElementById('nomination-continue').addEventListener('click',()=>{
+ if(window.PREMIER_CONFIG?.nomineeIntakeEnabled===false)return;
  nominationPreview.hidden=true;nomineeForm.hidden=false;nomineeDialog.querySelector('.dialog-footnote').hidden=false;
  (select.value?nomineeForm.elements.lastName:select).focus({preventScroll:true});
  nomineeDialog.querySelector('.request-dialog-body').scrollTop=0;
